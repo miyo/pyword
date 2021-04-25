@@ -25,7 +25,6 @@ class Q:
     @q.setter
     def q(self, v):
         self.__q = v
-        
     @property
     def a(self):
         return self.__a
@@ -39,7 +38,11 @@ class Q:
             data = f.readlines()
             entries = [d.split(",") for d in data]
             for entry in entries:
-                table[entry[1].strip()] = entry[0].strip()
+                if len(entry) >= 2:
+                    key = entry[1].strip()
+                    value = entry[0].strip()
+                    table[key] = value
+                    print(key, value)
         return table
 
     def get_question(self):
@@ -70,11 +73,15 @@ class Q:
         self.a = ret[1]
         self.question.set(q.q)
 
+data_file = os.environ["HOME"]+"/data.txt"
+if len(sys.argv) > 1:
+    data_file = sys.argv[1]
+
 root = Tk()
 root.title('Word Practice')
 root.resizable(False, False)
 
-q = Q(file=os.environ["HOME"]+"/data.txt")
+q = Q(file=data_file)
 
 frame1 = ttk.Frame(root, padding=(32))
 frame1.grid()
