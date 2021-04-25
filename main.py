@@ -2,23 +2,28 @@ import os
 import sys
 import time
 import random
+import datetime
 import tkinter
 import tkinter.font
 from tkinter import Tk
 from tkinter import ttk
+from tkinter import messagebox
 
 class Q:
-    def __init__(self, file="data.txt"):
+    def __init__(self, report_file, data_file):
         self.__q = ""
         self.__a = ""
-        self.table = self.open_list(file)
+        self.table = self.open_list(data_file)
+        self.report_file = report_file
+        self.begintime = self.tag_report_file(report_file)
         self.question = tkinter.StringVar()
         self.result = tkinter.StringVar()
         self.status = tkinter.StringVar()
         self.answer = tkinter.StringVar()
         self.number = 0
-        self.total = 20
+        self.total = 2
         self.misstakes = 0
+        self.history = []
     @property
     def q(self):
         return self.__q
@@ -45,18 +50,45 @@ class Q:
                     print(key, value)
         return table
 
+    def save_report(self, str):
+        with open(self.report_file, "a") as f:
+            print(str, file=f)
+
+    def tag_report_file(self, file):
+        now = datetime.datetime.now()
+        self.save_report("begin:" + str(now))
+        return now
+
+
     def get_question(self):
         i = random.randrange(len(self.table))
         return list(self.table.items())[i]
+
+    def finished(self):
+        if(self.total == self.number):
+            now = datetime.datetime.now()
+            result = "status:" + str(self.total) + "," + str(self.misstakes) + "," + str(now)
+            self.save_report(result)
+            elapsed = now - self.begintime
+            print("elapsed:", str(elapsed))
+            message = "Total: " + str(self.total) + "\n"
+            message += "Miss.: " + str(self.misstakes) + "\n"
+            message += "Time : " + str(now - self.begintime) + "sec."
+            messagebox.showinfo("status", message)
+            return True
+        return False
 
     def check_answer(self):
         print("yours", q.answer.get())
         flag = (q.answer.get() == self.a)
         print(flag)
+        result = "result:" + self.a + "," + q.answer.get() + "," + str(flag)
+        self.save_report(result)
         if(flag):
             self.result.set('OK!!')
-            if(self.total == self.number):
+            if self.finished():
                 sys.exit()
+
             self.make_next_question()
         else:
             self.result.set('Error!!')
@@ -74,6 +106,7 @@ class Q:
         self.question.set(q.q)
 
 data_file = os.environ["HOME"]+"/data.txt"
+report_file = os.environ["HOME"]+"/pyword_report.txt"
 if len(sys.argv) > 1:
     data_file = sys.argv[1]
 
@@ -81,7 +114,7 @@ root = Tk()
 root.title('Word Practice')
 root.resizable(False, False)
 
-q = Q(file=data_file)
+q = Q(data_file=data_file, report_file=report_file)
 
 frame1 = ttk.Frame(root, padding=(32))
 frame1.grid()
