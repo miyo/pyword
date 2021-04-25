@@ -21,7 +21,7 @@ class Q:
         self.status = tkinter.StringVar()
         self.answer = tkinter.StringVar()
         self.number = 0
-        self.total = 2
+        self.total = 20
         self.misstakes = 0
         self.history = []
     @property
